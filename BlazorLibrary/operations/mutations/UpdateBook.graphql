@@ -1,0 +1,5 @@
+mutation UpdateBook($id: Int! $item: UpdateBookInput!) {
+    updateBook(id: $id item: $item) {
+        id
+    }
+}

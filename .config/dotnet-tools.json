@@ -7,6 +7,12 @@
       "commands": [
         "dotnet-graphql"
       ]
+    },
+    "microsoft.dataapibuilder": {
+      "version": "0.5.35",
+      "commands": [
+        "dab"
+      ]
     }
   }
 }

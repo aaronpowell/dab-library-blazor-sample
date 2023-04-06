@@ -1,0 +1,45 @@
+@page "/books"
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+<PageTitle>Books</PageTitle>
+
+<h1>Available Books</h1>
+
+<UseGetBooks Context="result">
+    <ChildContent>
+        <QuickGrid Items="@result.Books.Items.AsQueryable()">
+            <PropertyColumn Property="@(r => r.Title)" Sortable="true" />
+            <PropertyColumn Property="@(r => r.Year)" Sortable="true" />
+            <PropertyColumn Property="@(r => r.Pages)" Sortable="true" />
+            <TemplateColumn Title="Authors">
+                <ChildContent>
+                    @{
+                        int count = 0;
+                    }
+                    @foreach (var author in context.Authors.Items)
+                    {
+                        @if (count > 0)
+                        {
+                            <span>, </span>
+                        }
+                        count++;
+                        <a href="/author/@author.Id">@($"{author.First_name} {author.Last_name}")</a>
+                    }
+                </ChildContent>
+            </TemplateColumn>
+            <TemplateColumn Title="Edit">
+                <ChildContent>
+                    <a href="/book/@context.Id">Edit</a>
+                </ChildContent>
+            </TemplateColumn>
+        </QuickGrid>
+        <a href="/book/new">Add a new book</a>
+    </ChildContent>
+    <ErrorContent>
+        There was an error...<br />
+        @result.First().Message
+    </ErrorContent>
+    <LoadingContent>
+        Getting books...
+    </LoadingContent>
+</UseGetBooks>

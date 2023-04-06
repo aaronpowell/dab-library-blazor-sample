@@ -1,0 +1,55 @@
+﻿@page "/book/new"
+
+@inject LibraryClient LibraryClient
+@inject NavigationManager Navigation
+
+<EditForm Model="@book" OnSubmit="@HandleSubmit">
+    <fieldset>
+        <div>
+            <label for="title">Title: </label>
+            <InputText name="title" @bind-Value="book.Title" />
+        </div>
+        <div>
+            <label for="year">Year: </label>
+            <InputNumber name="year" @bind-Value="book.Year" />
+        </div>
+        <div>
+            <label for="pages">Pages: </label>
+            <InputNumber name="pages" @bind-Value="book.Pages" />
+        </div>
+    </fieldset>
+    <fieldset>
+        <button type="submit">Save</button>
+        <button type="button" onclick="@(() => Navigation.NavigateTo("/books"))">Cancel</button>
+    </fieldset>
+</EditForm>
+
+@code {
+    private BookEditModel book = new();
+
+    public async Task HandleSubmit()
+    {
+        if (book.Title is null)
+        {
+            return;
+        }
+
+        var result = await LibraryClient.CreateBook.ExecuteAsync(new CreateBookInput
+            {
+                Title = book.Title,
+                Year = book.Year,
+                Pages = book.Pages
+            });
+        if (result.Errors is null)
+        {
+            Navigation.NavigateTo("/books");
+        }
+    }
+
+    class BookEditModel
+    {
+        public string? Title { get; set; }
+        public int? Year { get; set; }
+        public int? Pages { get; set; }
+    }
+}

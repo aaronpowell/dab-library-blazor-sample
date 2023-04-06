@@ -1,0 +1,5 @@
+mutation DeleteBookAuthorRelationship ($bookId: Int! $authorId: Int!) {
+    deleteBookAuthor (book_id: $bookId author_id: $authorId) {
+        book_id
+    }
+}
