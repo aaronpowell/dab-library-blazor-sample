@@ -4,3 +4,4 @@ obj
 *.user
 msbuild.binlog
 .env
+log.txt
