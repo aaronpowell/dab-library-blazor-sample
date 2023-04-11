@@ -1,11 +1,11 @@
 {
-  "$schema": "https://github.com/Azure/data-api-builder/releases/download/v0.5.35/dab.draft.schema.json",
+  "$schema": "https://github.com/Azure/data-api-builder/releases/download/v0.6.13/dab.draft.schema.json",
   "data-source": {
     "database-type": "mssql",
     "options": {
       "set-session-context": false
     },
-    "connection-string": ""
+    "connection-string": "@env('MSSQL')"
   },
   "runtime": {
     "rest": {
@@ -72,6 +72,71 @@
           "role": "anonymous",
           "actions": [
             "*"
+          ]
+        }
+      ]
+    },
+     "AuthorBooksCount": {
+      "source": {
+        "object": "dbo.vw_book_count_by_author",
+        "type": "view",
+        "key-fields": [
+          "author_id"
+        ]
+      },
+      "rest": {
+        "path": "/author-books-count"
+      },
+      "permissions": [
+        {
+          "role": "anonymous",
+          "actions": [
+            "read"
+          ]
+        }
+      ],
+      "mappings": {
+        "books": "book_count"
+      }      
+    },
+    "AssociateBooksWithAuthors": {
+      "source": {
+        "object": "dbo.stp_associate_book_with_authors",
+        "type": "stored-procedure",
+        "parameters": {
+          "bookId": "",
+          "authorsIds": ""
+        }    
+      },
+      "rest": {
+        "methods": [ "post" ]
+      },      
+      "permissions": [
+        {
+          "role": "anonymous",
+          "actions": [
+            "execute"
+          ]
+        }
+      ]
+    },
+    "DeassociateBooksFromAuthors": {
+      "source": {
+        "object": "dbo.stp_deassociate_book_from_authors",
+        "type": "stored-procedure",
+        "parameters": {
+          "bookId": "",
+          "authorsIds": ""
+        }    
+      },
+      "rest": {
+        "methods": [ "post" ]
+      },      
+      "permissions": [
+        {
+          "role": "anonymous",
+          "actions": [
+            "execute"
           ]
         }
       ]
