@@ -1,0 +1,145 @@
+{
+  "$schema": "https://github.com/Azure/data-api-builder/releases/download/v0.6.13/dab.draft.schema.json",
+  "data-source": {
+    "database-type": "mssql",
+    "options": {
+      "set-session-context": false
+    },
+    "connection-string": "@env('MSSQL')"
+  },
+  "runtime": {
+    "rest": {
+      "enabled": true,
+      "path": "/api"
+    },
+    "graphql": {
+      "allow-introspection": true,
+      "enabled": true,
+      "path": "/graphql"
+    },
+    "host": {
+      "mode": "development",
+      "cors": {
+        "origins": ["*"],
+        "allow-credentials": false
+      },
+      "authentication": {
+        "provider": "StaticWebApps"
+      }
+    }
+  },
+  "entities": {
+    "Author": {
+      "source": "dbo.authors",
+      "permissions": [
+        {
+          "role": "anonymous",
+          "actions": [
+            "*"
+          ]
+        }
+      ],
+      "relationships": {
+        "books": {
+          "cardinality": "many",
+          "target.entity": "Book",
+          "linking.object": "dbo.books_authors"
+        }
+      }
+    },
+    "Book": {
+      "source": "dbo.books",
+      "permissions": [
+        {
+          "role": "anonymous",
+          "actions": [
+            "*"
+          ]
+        }
+      ],
+      "relationships": {
+        "authors": {
+          "cardinality": "many",
+          "target.entity": "Author",
+          "linking.object": "dbo.books_authors"
+        }
+      }
+    },
+    "BookAuthor": {
+      "source": "dbo.books_authors",
+      "permissions": [
+        {
+          "role": "anonymous",
+          "actions": [
+            "*"
+          ]
+        }
+      ]
+    },
+     "AuthorBooksCount": {
+      "source": {
+        "object": "dbo.vw_book_count_by_author",
+        "type": "view",
+        "key-fields": [
+          "author_id"
+        ]
+      },
+      "rest": {
+        "path": "/author-books-count"
+      },
+      "permissions": [
+        {
+          "role": "anonymous",
+          "actions": [
+            "read"
+          ]
+        }
+      ],
+      "mappings": {
+        "books": "book_count"
+      }      
+    },
+    "AssociateBooksWithAuthors": {
+      "source": {
+        "object": "dbo.stp_associate_book_with_authors",
+        "type": "stored-procedure",
+        "parameters": {
+          "bookId": "",
+          "authorsIds": ""
+        }    
+      },
+      "rest": {
+        "methods": [ "post" ]
+      },      
+      "permissions": [
+        {
+          "role": "anonymous",
+          "actions": [
+            "execute"
+          ]
+        }
+      ]
+    },
+    "DeassociateBooksFromAuthors": {
+      "source": {
+        "object": "dbo.stp_deassociate_book_from_authors",
+        "type": "stored-procedure",
+        "parameters": {
+          "bookId": "",
+          "authorsIds": ""
+        }    
+      },
+      "rest": {
+        "methods": [ "post" ]
+      },      
+      "permissions": [
+        {
+          "role": "anonymous",
+          "actions": [
+            "execute"
+          ]
+        }
+      ]
+    }
+  }
+}
