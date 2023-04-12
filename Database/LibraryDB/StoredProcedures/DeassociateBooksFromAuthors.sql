@@ -1,5 +1,5 @@
 create procedure dbo.stp_deassociate_book_from_authors
-@bookId nvarchar(100),
+@bookId int,
 @authorsIds nvarchar(100)
 as
 with cte as

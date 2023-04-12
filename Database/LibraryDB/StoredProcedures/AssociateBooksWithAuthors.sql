@@ -1,5 +1,5 @@
 create procedure dbo.stp_associate_book_with_authors
-@bookId nvarchar(100),
+@bookId int,
 @authorsIds nvarchar(100)
 as
 insert into 
