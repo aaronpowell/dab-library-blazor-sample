@@ -1,5 +1,13 @@
-mutation UpdateBook($id: Int! $item: UpdateBookInput!) {
+mutation UpdateBook($id: Int! $item: UpdateBookInput! $authorIdsToAdd: String $authorIdsToRemove: String) {
     updateBook(id: $id item: $item) {
         id
+    }
+
+    executeAssociateBooksWithAuthors (bookId: $id authorsIds: $authorIdsToAdd) {
+        __typename
+    }
+
+    executeDeassociateBooksFromAuthors (bookId: $id authorsIds: $authorIdsToRemove) {
+        __typename
     }
 }

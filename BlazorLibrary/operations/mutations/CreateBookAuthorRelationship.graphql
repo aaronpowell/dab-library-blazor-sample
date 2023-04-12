@@ -1,6 +1,0 @@
-﻿mutation CreateBookAuthorRelationsip ($bookId: Int! $authorId: Int!) {
-    createBookAuthor(item: { author_id: $authorId book_id: $bookId }) {
-        book_id
-        author_id
-    }
-}

@@ -1,4 +1,4 @@
-﻿"""
+"""
 The `@defer` directive may be provided for fragment spreads and inline fragments to inform the executor to delay the execution of the current fragment to indicate deprioritization of the current fragment. A query with `@defer` directive will cause the request to potentially return multiple responses, where non-deferred data is delivered in the initial response and data deferred is delivered in a subsequent response. `@include` and `@skip` take precedence over `@defer`.
 """
 directive @defer(
@@ -74,7 +74,7 @@ A directive to indicate the relationship between two tables
 """
 directive @relationship(
   """
-  The name of the entity the relationship targets
+  The name of the GraphQL type the relationship targets
   """
   target: String
 
@@ -156,6 +156,7 @@ type Book {
   title: String!
   year: Int
   pages: Int
+  series_id: Int
   authors(
     """
     The number of items to return from the page start point
@@ -182,6 +183,25 @@ type Book {
 type BookAuthor {
   author_id: Int!
   book_id: Int!
+  author_type_id: Int
+}
+
+type AuthorBooksCount {
+  author_id: Int!
+  first_name: String!
+  middle_name: String
+  last_name: String!
+  book_count: Int
+}
+
+type AssociateBooksWithAuthors {
+  book_id: Int!
+  author_id: Int!
+}
+
+type DeassociateBooksFromAuthors {
+  book_id: Int!
+  author_id: Int!
 }
 
 """
@@ -374,6 +394,11 @@ input BookOrderByInput {
   pages: OrderBy
 
   """
+  Order by options for series_id
+  """
+  series_id: OrderBy
+
+  """
   Order by options for authors
   """
   authors: AuthorOrderByInput
@@ -414,6 +439,11 @@ input BookFilterInput {
   pages: IntFilterInput
 
   """
+  Filter options for series_id
+  """
+  series_id: IntFilterInput
+
+  """
   Filter options for authors
   """
   authors: AuthorFilterInput
@@ -444,6 +474,11 @@ input BookAuthorOrderByInput {
   book_id: OrderBy
 
   """
+  Order by options for author_type_id
+  """
+  author_type_id: OrderBy
+
+  """
   Conditions to be treated as AND operations
   """
   and: [BookAuthorOrderByInput]
@@ -469,6 +504,11 @@ input BookAuthorFilterInput {
   book_id: IntFilterInput
 
   """
+  Filter options for author_type_id
+  """
+  author_type_id: IntFilterInput
+
+  """
   Conditions to be treated as AND operations
   """
   and: [BookAuthorFilterInput]
@@ -477,6 +517,86 @@ input BookAuthorFilterInput {
   Conditions to be treated as OR operations
   """
   or: [BookAuthorFilterInput]
+}
+
+"""
+Order by input for AuthorBooksCount GraphQL type
+"""
+input AuthorBooksCountOrderByInput {
+  """
+  Order by options for author_id
+  """
+  author_id: OrderBy
+
+  """
+  Order by options for first_name
+  """
+  first_name: OrderBy
+
+  """
+  Order by options for middle_name
+  """
+  middle_name: OrderBy
+
+  """
+  Order by options for last_name
+  """
+  last_name: OrderBy
+
+  """
+  Order by options for book_count
+  """
+  book_count: OrderBy
+
+  """
+  Conditions to be treated as AND operations
+  """
+  and: [AuthorBooksCountOrderByInput]
+
+  """
+  Conditions to be treated as OR operations
+  """
+  or: [AuthorBooksCountOrderByInput]
+}
+
+"""
+Filter input for AuthorBooksCount GraphQL type
+"""
+input AuthorBooksCountFilterInput {
+  """
+  Filter options for author_id
+  """
+  author_id: IntFilterInput
+
+  """
+  Filter options for first_name
+  """
+  first_name: StringFilterInput
+
+  """
+  Filter options for middle_name
+  """
+  middle_name: StringFilterInput
+
+  """
+  Filter options for last_name
+  """
+  last_name: StringFilterInput
+
+  """
+  Filter options for book_count
+  """
+  book_count: IntFilterInput
+
+  """
+  Conditions to be treated as AND operations
+  """
+  and: [AuthorBooksCountFilterInput]
+
+  """
+  Conditions to be treated as OR operations
+  """
+  or: [AuthorBooksCountFilterInput]
 }
 
 type Query {
@@ -569,6 +689,36 @@ type Query {
   Get a BookAuthor from the database by its ID/primary key
   """
   bookAuthor_by_pk(author_id: Int!, book_id: Int!): BookAuthor
+
+  """
+  Get a list of all the AuthorBooksCount items from the database
+  """
+  authorBooksCounts(
+    """
+    The number of items to return from the page start point
+    """
+    first: Int
+
+    """
+    A pagination token from a previous query to continue through a paginated list
+    """
+    after: String
+
+    """
+    Filter options for query
+    """
+    filter: AuthorBooksCountFilterInput
+
+    """
+    Ordering options for query
+    """
+    orderBy: AuthorBooksCountOrderByInput
+  ): AuthorBooksCountConnection!
+
+  """
+  Get a AuthorBooksCount from the database by its ID/primary key
+  """
+  authorBooksCount_by_pk(author_id: Int!): AuthorBooksCount
 }
 
 """
@@ -619,6 +769,26 @@ type BookAuthorConnection {
   The list of items that matched the filter
   """
   items: [BookAuthor!]!
+
+  """
+  A pagination token to provide to subsequent pages of a query
+  """
+  endCursor: String
+
+  """
+  Indicates if there are more pages of items to return
+  """
+  hasNextPage: Boolean!
+}
+
+"""
+The return object from a filter query that supports a pagination token for paging through results
+"""
+type AuthorBooksCountConnection {
+  """
+  The list of items that matched the filter
+  """
+  items: [AuthorBooksCount!]!
 
   """
   A pagination token to provide to subsequent pages of a query
@@ -746,6 +916,36 @@ type Mutation {
     """
     book_id: Int!
   ): BookAuthor
+
+  """
+  Execute Stored-Procedure AssociateBooksWithAuthors and get results from the database
+  """
+  executeAssociateBooksWithAuthors(
+    """
+    parameters for AssociateBooksWithAuthors stored-procedure
+    """
+    bookId: Int = 1
+
+    """
+    parameters for AssociateBooksWithAuthors stored-procedure
+    """
+    authorsIds: String = ""
+  ): [AssociateBooksWithAuthors!]!
+
+  """
+  Execute Stored-Procedure DeassociateBooksFromAuthors and get results from the database
+  """
+  executeDeassociateBooksFromAuthors(
+    """
+    parameters for DeassociateBooksFromAuthors stored-procedure
+    """
+    bookId: Int = 1
+
+    """
+    parameters for DeassociateBooksFromAuthors stored-procedure
+    """
+    authorsIds: String = ""
+  ): [DeassociateBooksFromAuthors!]!
 }
 
 """
@@ -821,6 +1021,11 @@ input CreateBookInput {
   Input for field pages on type CreateBookInput
   """
   pages: Int
+
+  """
+  Input for field series_id on type CreateBookInput
+  """
+  series_id: Int
 }
 
 """
@@ -846,6 +1051,11 @@ input UpdateBookInput {
   Input for field pages on type UpdateBookInput
   """
   pages: Int
+
+  """
+  Input for field series_id on type UpdateBookInput
+  """
+  series_id: Int
 }
 
 """
@@ -861,6 +1071,11 @@ input CreateBookAuthorInput {
   Input for field book_id on type CreateBookAuthorInput
   """
   book_id: Int!
+
+  """
+  Input for field author_type_id on type CreateBookAuthorInput
+  """
+  author_type_id: Int
 }
 
 """
@@ -876,6 +1091,11 @@ input UpdateBookAuthorInput {
   Input for field book_id on type UpdateBookAuthorInput
   """
   book_id: Int
+
+  """
+  Input for field author_type_id on type UpdateBookAuthorInput
+  """
+  author_type_id: Int
 }
 
 enum ApplyPolicy {

@@ -8,8 +8,8 @@
 
     <ItemGroup>
       <GraphQL Remove="operations\CreateBook.graphql" />
-      <GraphQL Remove="operations\mutations\CreateBookAuthorRelationship.graphql" />
-      <GraphQL Remove="operations\mutations\DeleteBookAuthorRelationship.graphql" />
+      <GraphQL Remove="operations\mutations\AddAuthorsToBook.graphql" />
+      <GraphQL Remove="operations\queries\GetAuthors.graphql" />
       <GraphQL Remove="UpdateBook.graphql" />
     </ItemGroup>
 
@@ -23,11 +23,6 @@
 
     <ItemGroup>
       <None Remove="GetBook.graphql" />
-      <None Remove="operations\mutations\CreateBookAuthorRelationship.graphql" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Include="operations\mutations\CreateBookAuthorRelationship.graphql" />
     </ItemGroup>
 
 </Project>

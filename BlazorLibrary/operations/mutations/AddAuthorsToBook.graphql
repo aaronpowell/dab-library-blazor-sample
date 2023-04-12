@@ -1,0 +1,5 @@
+mutation AddAuthorsToBook($bookId: Int! $authorIds: String) {
+  executeAssociateBooksWithAuthors (bookId: $bookId authorsIds: $authorIds) {
+    __typename
+  }
+}

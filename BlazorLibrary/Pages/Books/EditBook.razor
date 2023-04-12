@@ -1,0 +1,92 @@
+﻿@page "/book/{Id:int}"
+
+@using Microsoft.Fast.Components.FluentUI
+
+@inject LibraryClient LibraryClient
+@inject NavigationManager Navigation
+
+<EditForm Model="@book" OnSubmit="@HandleSubmit">
+    <fieldset>
+        <div>
+            <FluentTextField name="title" @bind-Value="book.Title" style="width: 500px;">Book Title</FluentTextField>
+        </div>
+        <div>
+            <FluentNumberField name="year" @bind-Value="book.Year" style="width: 250px;">Published Year</FluentNumberField>
+            <FluentNumberField name="pages" @bind-Value="book.Pages" style="width: 250px;">Pages</FluentNumberField>
+        </div>
+        <div>
+            <label for="authors">Authors</label>
+            <FluentListbox Multiple="true"
+                           Id="authors"
+                           Items="@allAuthors"
+                           OptionValue="@(a => a.Id.ToString())"
+                           OptionText="@(a => $"{a.First_name} {a.Last_name}")"
+            @bind-SelectedOptions="@selectedAuthors" />
+        </div>
+    </fieldset>
+    <fieldset>
+        <FluentButton Type="@ButtonType.Submit">Save</FluentButton>
+        <FluentButton Type="@ButtonType.Button" onclick="@(() => Navigation.NavigateTo("/books"))">Cancel</FluentButton>
+    </fieldset>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private BookEditModel book = new();
+    private IReadOnlyList<IGetBookById_Authors_Items>? allAuthors;
+    private IEnumerable<IGetBookById_Authors_Items>? selectedAuthors;
+
+    public async Task HandleSubmit()
+    {
+        var authorIdsToAdd = selectedAuthors?.Where(a => book.Authors?.All(b => b.Id != a.Id) ?? false).Select(a => a.Id).ToList() ?? new();
+        var authorIdsToRemove = book.Authors?.Where(a => selectedAuthors?.All(b => b.Id != a.Id) ?? false).Select(a => a.Id).ToList() ?? new();
+
+        var result = await LibraryClient.UpdateBook.ExecuteAsync(Id,
+            new UpdateBookInput
+                {
+                    Id = Id,
+                    Title = book.Title,
+                    Year = book.Year,
+                    Pages = book.Pages
+                },
+            authorIdsToAdd.Any() ? string.Join(",", authorIdsToAdd) : null,
+            authorIdsToRemove.Any() ? string.Join(",", authorIdsToRemove) : null);
+        if (result.Errors is null || !result.Errors.Any())
+        {
+            Navigation.NavigateTo("/books");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var data = await LibraryClient.GetBookById.ExecuteAsync(Id);
+
+        if (data.Data is null || data.Data.Book_by_pk is null)
+        {
+            Navigation.NavigateTo("/books");
+            return;
+        }
+
+        book = new()
+            {
+                Title = data.Data.Book_by_pk.Title,
+                Year = data.Data.Book_by_pk.Year,
+                Pages = data.Data.Book_by_pk.Pages,
+                Authors = data.Data.Authors.Items.Where(a => data.Data.Book_by_pk.Authors.Items.Any(b => b.Id == a.Id)).ToList()
+            };
+
+        allAuthors = data.Data.Authors.Items;
+
+        selectedAuthors = data.Data.Authors.Items.Where(a => data.Data.Book_by_pk.Authors.Items.Any(b => b.Id == a.Id)).ToList();
+    }
+
+    class BookEditModel
+    {
+        public string? Title { get; set; }
+        public int? Year { get; set; }
+        public int? Pages { get; set; }
+        public IEnumerable<IGetBookById_Authors_Items>? Authors { get; set; }
+    }
+}

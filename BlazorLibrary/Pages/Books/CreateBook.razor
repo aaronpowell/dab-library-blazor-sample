@@ -1,0 +1,71 @@
+﻿@page "/book/new"
+
+@using Microsoft.Fast.Components.FluentUI
+
+@inject LibraryClient LibraryClient
+@inject NavigationManager Navigation
+
+<EditForm Model="@book" OnSubmit="@HandleSubmit">
+    <fieldset>
+        <div>
+            <FluentTextField name="title" @bind-Value="book.Title" style="width: 500px;">Book Title</FluentTextField>
+        </div>
+        <div>
+            <FluentNumberField name="year" @bind-Value="book.Year" style="width: 250px;">Published Year</FluentNumberField>
+            <FluentNumberField name="pages" @bind-Value="book.Pages" style="width: 250px;">Pages</FluentNumberField>
+        </div>
+        <div>
+            <label for="authors">Authors</label>
+            <FluentListbox Multiple="true"
+                           Id="authors"
+                           Items="@allAuthors"
+                           OptionValue="@(a => a.Id.ToString())"
+                           OptionText="@(a => $"{a.First_name} {a.Last_name}")"
+            @bind-SelectedOptions="@selectedAuthors" />
+        </div>
+    </fieldset>
+    <fieldset>
+        <FluentButton Type="@ButtonType.Submit">Save</FluentButton>
+        <FluentButton Type="@ButtonType.Button" onclick="@(() => Navigation.NavigateTo("/books"))">Cancel</FluentButton>
+    </fieldset>
+</EditForm>
+
+@code {
+    private BookEditModel book = new();
+    private IReadOnlyList<IGetAuthors_Authors_Items>? allAuthors;
+    private IEnumerable<IGetAuthors_Authors_Items>? selectedAuthors;
+
+    public async Task HandleSubmit()
+    {
+        if (book.Title is null)
+        {
+            return;
+        }
+
+        var authorIdsToAdd = selectedAuthors?.Select(a => a.Id).ToList() ?? new();
+
+        var result = await LibraryClient.CreateBook.ExecuteAsync(new CreateBookInput
+            {
+                Title = book.Title,
+                Year = book.Year,
+                Pages = book.Pages
+            });
+        if (result.Errors is null && (result.Data?.CreateBook is not null))
+        {
+            await LibraryClient.AddAuthorsToBook.ExecuteAsync(result.Data.CreateBook.Id, authorIdsToAdd.Any() ? string.Join(",", authorIdsToAdd) : null);
+            Navigation.NavigateTo("/books");
+        }
+    }
+
+    override protected async Task OnInitializedAsync()
+    {
+        allAuthors = (await LibraryClient.GetAuthors.ExecuteAsync()).Data?.Authors.Items;
+    }
+
+    class BookEditModel
+    {
+        public string? Title { get; set; }
+        public int? Year { get; set; }
+        public int? Pages { get; set; }
+    }
+}
